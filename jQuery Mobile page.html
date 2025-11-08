@@ -1,0 +1,321 @@
+<html class="ui-mobile"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><base href=".">
+    <title>jQuery Mobile page</title>
+    
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <link rel="stylesheet" href="./jQuery Mobile page_files/TOBASIC.css">
+    <link rel="stylesheet" href="./jQuery Mobile page_files/jquery.mobile.icons.min.css">
+
+    <script src="./jQuery Mobile page_files/jquery-1.11.1.min.js"></script> 
+    <script src="./jQuery Mobile page_files/jquery.mobile-1.4.5.min.js"></script>
+
+    <link rel="stylesheet" href="./jQuery Mobile page_files/jquery.mobile.structure-1.4.5.min.css"> 
+  </head>
+  
+  <body class="ui-mobile-viewport ui-overlay-a"><div data-role="page" data-url="/~slash/ABC/ac/11_accel.html" tabindex="0" class="ui-page ui-page-theme-a ui-page-active" style="">
+    <div style="align: center;">
+      <button onclick="requestMotionPermission();" class=" ui-btn ui-shadow ui-corner-all">Get permission and start sensing</button>
+      <button onclick="stopDeviceMotion();" class=" ui-btn ui-shadow ui-corner-all">Stop</button>
+    </div>
+    <h2>Activity Recognition</h2>
+    <h3>(3) Classification result</h3>
+    <ul>
+    <li> Result: <span id="current_result" style="color:red;font-size:2.0em; font-weight: bold; border-top: 1px solid black; border-bottom: 1px solid black;">null</span> </li> 
+    </ul>
+    
+    <h3>(2) Features for this time window</h3>
+    <ul>
+    <li> min x: <span id="xmin">0</span> </li>
+    <li> max x: <span id="xmax">0</span> </li>
+    <li> ave x: <span id="xave">0</span> </li>
+
+    <li> min y: <span id="ymin">0</span> </li>
+    <li> max y: <span id="ymax">0</span> </li>
+    <li> ave y: <span id="yave">0</span> </li>
+
+    <li> min z: <span id="zmin">0</span> </li>
+    <li> max z: <span id="zmax">0</span> </li>
+    <li> ave z: <span id="zave">0</span> </li>
+    </ul>
+
+    <h3>(1) Raw sensor values for this time window</h3>
+    <ul>
+    <li> X: <span id="accel-x">0</span> </li> 
+    <li> Y: <span id="accel-y">0</span> </li> 
+    <li> Z: <span id="accel-z">0</span> </li>
+    </ul>
+    
+    <textarea id="raw-data" style="width: 90%; height: 52px;" class="ui-input-text ui-shadow-inset ui-body-inherit ui-corner-all ui-textinput-autogrow"></textarea>
+
+    <hr>
+
+    <h2>レポート記述欄 / Report</h2>
+    
+    <h3>Name / 氏名:</h3>
+    <p>[ あなたの氏名 ]</p>
+    
+    <h3>Department / 学部:</h3>
+    <p>[ あなたの学部（例：環境情報学部） ]</p>
+    
+    <h3>Year / 学年:</h3>
+    <p>[ あなたの学年 ]</p>
+    
+    <h3>Student ID / 学籍番号:</h3>
+    <p>[ あなたの学籍番号 ]</p>
+    
+    <h3>CNS Email / CNSメールアドレス:</h3>
+    <p>[ あなたのCNSメールアドレス（@sfc.keio.ac.jp） ]</p>
+    
+    <hr>
+    
+    <h3>Collected Data / 収集した行動データ</h3>
+    
+    <h4>Reason behind data selection / 選定した理由</h4>
+    <p>
+      活動認識の基本的な動作として、「静止 (Still)」「歩行 (Walking)」「走行 (Running)」の3つを選定した。これらはセンサ（加速度計）の反応が明確に異なると予想したため。
+    </p>
+    
+    <h4>Details about collection / 収集についての詳細</h4>
+    <p>
+      スマートフォン（またはPC）上で、3つの活動に対応するCSVファイル（`still.csv`, `walking.csv`, `Running.csv`）を用意した。
+      （※注：実際には3つのファイルの中身が同一のデータであったため、Wekaは活動を区別できなかった。）
+    </p>
+    
+    <h4>Any challenges and tweaks / 工夫した点・困難だった点</h4>
+    <p>
+      当初、複数の活動データをスマートフォンで実際に収集・管理する作業を困難に感じた。
+      そのため、学習データの準備を簡略化（同一データをコピー）してしまったが、これが後の機械学習の失敗（モデルがif文を生成できなかった）に直結した。
+    </p>
+    
+    <hr>
+    
+    <h3>Features / 特徴量</h3>
+    
+    <h4>Reason behind data selection / 選定した理由</h4>
+    <p>
+      10/24の授業資料（ABC2025-3_20251024 (1).pdf）で示されていた、活動認識の基本的な特徴量を採用した。具体的には、3秒（3000ms）のタイムフレームにおける、加速度センサ各軸（X, Y, Z）の最大値（Max）、最小値（Min）、平均値（Avg）、分散（Var）の合計12個である。
+    </p>
+    
+    <h4>Details about additional feature types / 追加した特徴量について</h4>
+    <p>
+      今回は、授業で指定された上記12個の特徴量のみを使用し、特に追加した特徴量はない。
+    </p>
+    
+    <h4>Any challenges and tweaks / 工夫した点・困難だった点</h4>
+    <p>
+      CSVデータからの特徴抽出は、Python（pandas）のコードを実行できるAI（Claude Code）を利用して自動化した。これにより、`features_all.csv` を効率的に生成することができた。
+    </p>
+    
+    <hr>
+    
+    <h3>ML Model / 機械学習モデル</h3>
+    
+    <h4>Algorithm you used and the training result / 採用したアルゴリズムや学習結果の詳細</h4>
+    <p>
+      WekaのExplorerを使用し、アルゴリズムは授業で推奨された決定木（`weka.classifiers.trees.J48`）を採用した。
+      `features_all.csv`（145インスタンス）を「Test options: Use training set」で学習させた。
+    </p>
+    <p>
+      <b>学習結果（Classifier output）:</b>
+      <pre>
+    J48 pruned tree
+    ------------------
+    : Running (145.0/83.0)
+    
+    Size of the tree : 1
+      </pre>
+      <b>考察:</b>
+      上記の結果が示す通り、if文（分岐ルール）が一切生成されなかった。
+      これは、Wekaが3つの活動（Still, Walking, Running）を区別するための有効なルール（例: `Y_Var <= 2.5` など）を、与えられたデータから見つけられなかったことを意味する。
+    </p>
+    
+    <h4>Any challenges and tweaks / 工夫した点・困難だった点</h4>
+    <p>
+      学習が失敗した最大の原因は、学習データ（`features_all.csv`）にある。
+      「収集した行動データ」のセクションで述べた通り、3つの活動のCSVファイル（`still.csv` 等）の中身が、活動ごとの特徴（揺れの違い）を反映していなかったため、特徴抽出後のデータもすべて似通った値になってしまったと考えられる。
+      Wekaは「同じようなデータなのに、ラベルだけが違う（Still, Walking, Runningが混在している）」状態と判断し、ルール作成を断念し、最も多数派だった「Running」（145件中62件）を常に返すモデルを作成したと考察される。
+    </p>
+    
+    <hr>
+    
+    <h3>Real-time execution result / 実機に移植しての性能評価</h3>
+    
+    <h4>Evaluation metric you used / 評価尺度について</h4>
+    <p>
+      例題HTML（`11_accel.html`）に学習済みモデルを移植し、スマートフォンで実際に「静止」「歩行」「走行」を行った際に、画面に表示される判定結果が実際の行動と一致するかを目視で確認する「主観評価（定性評価）」を行った。
+    </p>
+    
+    <h4>Evaluation results / 評価結果</h4>
+    <p>
+      Wekaの学習結果（`return "Running"`）に基づき、HTML内の `classify(features)` 関数が常に `"Running"` を返すように実装した。
+    </p>
+    <ul>
+      <li><b>「静止」中:</b> 画面は "Running" と表示された。（判定失敗）</li>
+      <li><b>「歩行」中:</b> 画面は "Running" と表示された。（判定失敗）</li>
+      <li><b>「走行」中:</b> 画面は "Running" と表示された。（判定成功）</li>
+    </ul>
+    <p>
+      当然ながら、学習が失敗したモデルを移植したため、走行中以外はまったく正しく動作しなかった。
+    </p>
+    
+    <h4>Any challenges and tweaks / 工夫した点・困難だった点</h4>
+    <p>
+      「うまくいかなかった」という結果（`return "Running";`）を、そのままHTMLに移植し、動作させるとどうなるかを確認した。
+      このプロセス全体（データ収集→特徴抽出→学習→移植）を通じて、モデルの性能は「学習データの質」に完全に依存していることを強く実感した。
+    </p>
+    
+    <script type="text/javascript">
+
+alert("Welcome to example Activity Recognition (11).");
+
+//CONFIG: Length of each time window
+const NUM_DATA_PER_FRAME = 200;
+
+//Arrays for saving the raw sensor data
+var xdata = [];
+var ydata = [];
+var zdata = [];
+var num_data = 0;
+
+//Features
+var xmin = 0.0;
+var xmax = 0.0;
+var xave = 0.0;
+var ymin = 0.0;
+var ymax = 0.0;
+var yave = 0.0;
+var zmin = 0.0;
+var zmax = 0.0;
+var zave = 0.0;
+
+//////////////////////////////////////////////////////
+//Function to get sensor access permission from the browser
+//////////////////////////////////////////////////////
+function requestMotionPermission(){
+  if ( DeviceMotionEvent &&
+       typeof DeviceMotionEvent.requestPermission === 'function' ){
+      // iOS 13+ の Safari
+      // 許可を取得
+      DeviceMotionEvent.requestPermission().then(permissionState => {
+      if (permissionState === 'granted') {
+              // 許可を得られた場合、devicemotionをイベントリスナーに追加
+          window.addEventListener("devicemotion", handleAcceleration, false);
+      } else {
+              // 許可を得られなかった場合の処理
+          console.log("Perrmission not granted!");
+          alert("Perrmission not granted!");
+      }
+      }).catch(console.error) // https通信でない場合などで許可を取得できなかった場合
+
+  } else {
+      //For other devices
+      console.log("detected other device. so adding listener...");
+      window.addEventListener("devicemotion", handleAcceleration, false);
+  }
+
+}
+
+function stopDeviceMotion(){ 
+    window.removeEventListener("devicemotion", handleAcceleration, false);
+}
+
+
+////////////////////////////////////////////////////////////////////
+//Function(1): 読み込まれてきた最新の加速度データ(X,Y,Z)を処理する関数
+//  - この関数は(機種によりますが) 秒速10〜100回というような高頻度で呼ばれます
+////////////////////////////////////////////////////////////////////
+function handleAcceleration(ev){
+
+    //alert("" + event.acceleration.x + " " + event.acceleration.y + " " + event.acceleration.z);
+    $('#accel-x').text( ev.acceleration.x );
+    xdata.push(ev.acceleration.x);
+    $('#accel-y').text( ev.acceleration.y );
+    ydata.push(ev.acceleration.y);
+    $('#accel-z').text( ev.acceleration.z );
+    zdata.push(ev.acceleration.z);
+    $('#raw-data').append(ev.acceleration.x + ", " + ev.acceleration.y + ", " + ev.acceleration.z + "\n");
+
+    num_data++;
+    //If we have enough raw sensor data...
+    if( num_data == NUM_DATA_PER_FRAME ){
+
+    //execute feature calculations.
+    featureExtraction();
+
+    //Let's classify the activity!
+    var current_activity = classify();
+    $('#current_result').text( current_activity );
+    
+    //clear the raw sensor data
+    xdata=[];
+    ydata=[];
+    zdata=[];
+    //Clear the textarea 
+    $('#raw-data').empty();
+    //Counter back to 0
+    num_data=0;
+    }
+    
+}
+
+////////////////////////////////////////////////////////////////////
+//Function(2):センサデータから "feature"(特徴量)を計算する関数
+//  - この関数は NUM_DATA_PER_FRAME 変数で設定された数だけセンサデータが
+//    「設定されたタイムフレーム」にたまる度に呼ばれます。
+//  - 例: センサデータが 50Hz (=50 data / seconds)
+//        NUM_DATA_PER_FRAME が 200 の場合
+//        → 約4秒に1度の頻度で呼ばれます
+////////////////////////////////////////////////////////////////////
+//helper func. to calculate average
+const arrAvg = arr => arr.reduce((a,b) => a + b, 0) / arr.length
+
+function featureExtraction(){
+    xmin = Math.min.apply(Math, xdata); $('#xmin').text(xmin);
+    xmax = Math.max.apply(Math, xdata); $('#xmax').text(xmax);
+    xave = arrAvg(xdata); $('#xave').text(xave);
+    
+    ymin = Math.min.apply(Math, ydata); $('#ymin').text(ymin);
+    ymax = Math.max.apply(Math, ydata); $('#ymax').text(ymax);
+    yave = arrAvg(ydata); $('#yave').text(yave);
+
+    zmax = Math.max.apply(Math, zdata); $('#zmax').text(zmax);
+    zmin = Math.min.apply(Math, zdata); $('#zmin').text(zmin);
+    zave = arrAvg(zdata); $('#zave').text(zave);
+}
+
+////////////////////////////////////////////////////////////////////
+//Function(3): 最新フレームにおける特徴量(feature)から、現在のユーザの
+//行動を分類 (classify) する関数          
+//  - ここに書いてあるのは、手打ちで書いたサンプルのif文ロジックです
+//  - 実際には機械学習エンジンが出力したif文の固まり (決定木アルゴリズムの場合)
+//  - がここに入ります
+//
+// ★★★ ここを編集 ★★★
+////////////////////////////////////////////////////////////////////
+function classify(){
+
+    // Wekaの学習結果 (「J48 pruned tree...: Running」) を移植
+    // if文が生成されなかったため、常に "Running" を返す
+    return "Running";
+
+    /*
+    if(zmin <= 0.1){
+    if(xmin <= -0.2){
+        if(xmin <= -0.4){
+        return 'walking';
+        }else{
+        return 'still';
+        }
+    }else{
+        return 'walking';
+    }
+    }else{
+    return 'still';
+    }
+    */
+
+}
+
+</script>
+</div><div class="ui-loader ui-corner-all ui-body-a ui-loader-default"><span class="ui-icon-loading"></span><h1>loading</h1></div></body></html>
